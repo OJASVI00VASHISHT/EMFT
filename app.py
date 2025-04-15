@@ -1,29 +1,60 @@
 import streamlit as st
 import numpy as np
 
-def transform_point(point, rotation_deg, translation):
-    theta = np.radians(rotation_deg)
-    R = np.array([
-        [np.cos(theta), -np.sin(theta)],
-        [np.sin(theta),  np.cos(theta)]
-    ])
-    P = np.array(point)
-    T = np.array(translation)
-    P_transformed = R @ P + T
-    return tuple(P_transformed)
+def cartesian_to_cylindrical(x, y, z):
+    r = np.sqrt(x**2 + y**2)
+    theta = np.degrees(np.arctan2(y, x))
+    return np.array([["Radius (r)", f"{r} units"], ["Theta (θ)", f"{theta} degrees"], ["Z", f"{z} units"]])
+
+def cartesian_to_circular(x, y, z):
+    r = np.sqrt(x**2 + y**2 + z**2)
+    theta = np.degrees(np.arctan2(y, x))
+    phi = np.degrees(np.arccos(z / r)) if r != 0 else 0
+    return np.array([["Radius (r)", f"{r} units"], ["Theta (θ)", f"{theta} degrees"], ["Phi (φ)", f"{phi} degrees"]])
 
 st.title("Coordinate Transformation Tool")
 
-x = st.number_input("Enter x coordinate of the point", value=0.0)
-y = st.number_input("Enter y coordinate of the point", value=0.0)
-angle = st.number_input("Enter rotation angle (in degrees)", value=0.0)
-tx = st.number_input("Enter translation in x direction", value=0.0)
-ty = st.number_input("Enter translation in y direction", value=0.0)
+# Ask the user to select the coordinate system
+coordinate_system = st.selectbox(
+    "Select the coordinate system to convert from:",
+    ["Cartesian", "Cylindrical", "Circular"]
+)
 
-if st.button("Transform Point"):
-    original_point = (x, y)
-    translation_vector = (tx, ty)
-    new_point = transform_point(original_point, angle, translation_vector)
+if coordinate_system == "Cartesian":
+    x = st.number_input("Enter x coordinate", value=0.0)
+    y = st.number_input("Enter y coordinate", value=0.0)
+    z = st.number_input("Enter z coordinate", value=0.0)
 
-    st.write(f"**Original Point:** {original_point}")
-    st.write(f"**Transformed Point:** {new_point}")
+    if st.button("Convert"):
+        cylindrical_coords = cartesian_to_cylindrical(x, y, z)
+        st.write("**Cylindrical Coordinates (Matrix Form):**")
+        st.write(cylindrical_coords)
+
+        circular_coords = cartesian_to_circular(x, y, z)
+        st.write("**Circular Coordinates (Matrix Form):**")
+        st.write(circular_coords)
+
+elif coordinate_system == "Cylindrical":
+    r = st.number_input("Enter radial distance (r)", value=0.0)
+    theta = st.number_input("Enter angle θ (in degrees)", value=0.0)
+    z = st.number_input("Enter z coordinate", value=0.0)
+
+    if st.button("Convert"):
+        x = r * np.cos(np.radians(theta))
+        y = r * np.sin(np.radians(theta))
+        st.write("**Cartesian Coordinates (Matrix Form):**")
+        st.write(np.array([["X", f"{x} units"], ["Y", f"{y} units"], ["Z", f"{z} units"]]))
+
+        circular_coords = cartesian_to_circular(x, y, z)
+        st.write("**Circular Coordinates (Matrix Form):**")
+        st.write(circular_coords)
+
+elif coordinate_system == "Circular":
+    r = st.number_input("Enter radial distance (r)", value=0.0)
+    theta = st.number_input("Enter angle θ (in degrees)", value=0.0)
+    phi = st.number_input("Enter angle φ (in degrees)", value=0.0)
+
+    if st.button("Convert"):
+        st.write("**Circular Coordinates (Matrix Form):**")
+        st.write(np.array([["Radius (r)", f"{r} units"], ["Theta (θ)", f"{theta} degrees"], ["Phi (φ)", f"{phi} degrees"]]))
+        
