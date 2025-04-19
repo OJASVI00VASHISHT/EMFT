@@ -55,6 +55,14 @@ elif coordinate_system == "Circular":
     phi = st.number_input("Enter angle φ (in degrees)", value=0.0)
 
     if st.button("Convert"):
-        st.write("**Circular Coordinates (Matrix Form):**")
-        st.write(np.array([["Radius (r)", f"{r} units"], ["Theta (θ)", f"{theta} degrees"], ["Phi (φ)", f"{phi} degrees"]]))
-        
+        # Convert circular (spherical) to Cartesian
+        x = r * np.sin(np.radians(phi)) * np.cos(np.radians(theta))
+        y = r * np.sin(np.radians(phi)) * np.sin(np.radians(theta))
+        z = r * np.cos(np.radians(phi))
+
+        st.write("**Cartesian Coordinates (Matrix Form):**")
+        st.write(np.array([["X", f"{x} units"], ["Y", f"{y} units"], ["Z", f"{z} units"]]))
+
+        cylindrical_coords = cartesian_to_cylindrical(x, y, z)
+        st.write("**Cylindrical Coordinates (Matrix Form):**")
+        st.write(cylindrical_coords)
